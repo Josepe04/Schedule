@@ -1,0 +1,238 @@
+<cfquery name='getScheduleCourses' DataSource='#DSN#' dbtype='ODBC' debug='yes'> 
+        select top 73 udd.id
+        from uddata udd
+        inner join udfield udf
+            on udd.fieldid = udf.fieldid
+        inner join udgroup udg
+            on udg.groupid = udf.groupid
+            and udg.grouptype = 'course'
+            and udg.groupname = 'Schedule'
+            and udf.fieldName = 'Schedule'
+            and udd.data = '1'
+    </cfquery>
+
+    <cfdump var="#getScheduleCourses#">
+
+    <!--- 1 ID, 2 BlocksPerWeek, 3 GR, 4 MaxSect, 5 MinGBlock, 6 MinGDay, 7 Rank, 8 Teachers, 9 ExcludeBlocks --->
+    <cfset courses_spec=ArrayNew(2)>    
+    
+    <cfset arrayRow = 1>    
+    <cfoutput>
+        <cfloop query="getScheduleCourses">
+            <cfset courses_spec[#arrayRow#][1]=#id#>
+            
+            <cfquery name="getBlocksPerWeek" DataSource='#DSN#' dbtype='ODBC' debug='yes'> 
+                select udd.data
+                from uddata udd
+                inner join udfield udf
+                    on udd.fieldid = udf.fieldid
+                inner join udgroup udg
+                    on udg.groupid = udf.groupid
+                    and udg.grouptype = 'course'
+                    and udg.groupname = 'Schedule'
+                    and udf.fieldName = 'BlocksPerWeek'
+                where udd.id = #id#	
+            </cfquery>
+            
+            <cfif IsNumeric(getBlocksPerWeek.data)>
+	            <cfset courses_spec[#arrayRow#][2]=#getBlocksPerWeek.data#>
+             <cfelse>
+             	   <cfset courses_spec[#arrayRow#][2]=0>
+             </cfif>      
+            
+            <cfquery name="getGR" DataSource='#DSN#' dbtype='ODBC' debug='yes'> 
+                select udd.data
+                from uddata udd
+                inner join udfield udf
+                    on udd.fieldid = udf.fieldid
+                inner join udgroup udg
+                    on udg.groupid = udf.groupid
+                    and udg.grouptype = 'course'
+                    and udg.groupname = 'Schedule'
+                    and udf.fieldName = 'GR'
+                where udd.id = #id#
+            </cfquery>
+            <cfset courses_spec[#arrayRow#][3]=#getGR.data#>
+            
+            <cfquery name="getMaxSections" DataSource='#DSN#' dbtype='ODBC' debug='yes'> 
+                select udd.data
+                from uddata udd
+                inner join udfield udf
+                    on udd.fieldid = udf.fieldid
+                inner join udgroup udg
+                    on udg.groupid = udf.groupid
+                    and udg.grouptype = 'course'
+                    and udg.groupname = 'Schedule'
+                    and udf.fieldName = 'MaxSections'
+                where udd.id = #id#
+            </cfquery>
+            <cfset courses_spec[#arrayRow#][4]=#getMaxSections.data#>
+            
+            <cfquery name="getMinGapBlocks" DataSource='#DSN#' dbtype='ODBC' debug='yes'> 
+                select udd.data
+                from uddata udd
+                inner join udfield udf
+                    on udd.fieldid = udf.fieldid
+                inner join udgroup udg
+                    on udg.groupid = udf.groupid
+                    and udg.grouptype = 'course'
+                    and udg.groupname = 'Schedule'
+                    and udf.fieldName = 'MinGapBlocks'
+                where udd.id = #id#
+            </cfquery>
+            <cfset courses_spec[#arrayRow#][5]=#getMinGapBlocks.data#>
+            
+            <cfquery name="getMinGapDays" DataSource='#DSN#' dbtype='ODBC' debug='yes'> 
+                select udd.data
+                from uddata udd
+                inner join udfield udf
+                    on udd.fieldid = udf.fieldid
+                inner join udgroup udg
+                    on udg.groupid = udf.groupid
+                    and udg.grouptype = 'course'
+                    and udg.groupname = 'Schedule'
+                    and udf.fieldName = 'MinGapDays'
+                where udd.id = #id#
+            </cfquery>
+			<cfif IsNumeric(getMinGapDays.data)>
+	            <cfset courses_spec[#arrayRow#][6]=#getMinGapDays.data#>
+             <cfelse>
+             	  <cfset courses_spec[#arrayRow#][6]=0> 
+             </cfif>     
+            
+            <cfquery name="getRank" DataSource='#DSN#' dbtype='ODBC' debug='yes'> 
+                select udd.data
+                from uddata udd
+                inner join udfield udf
+                    on udd.fieldid = udf.fieldid
+                inner join udgroup udg
+                    on udg.groupid = udf.groupid
+                    and udg.grouptype = 'course'
+                    and udg.groupname = 'Schedule'
+                    and udf.fieldName = 'Rank'
+                where udd.id = #id#
+            </cfquery>
+            <cfif IsNumeric(getRank.data)>
+            	<cfset courses_spec[#arrayRow#][7]=#getRank.data#>
+             <cfelse>
+             	<cfset courses_spec[#arrayRow#][7]=1000>
+             </cfif>   
+            
+            <cfquery name="getTeachers" DataSource='#DSN#' dbtype='ODBC' debug='yes'> 
+                select udd.data
+                from uddata udd
+                inner join udfield udf
+                    on udd.fieldid = udf.fieldid
+                inner join udgroup udg
+                    on udg.groupid = udf.groupid
+                    and udg.grouptype = 'course'
+                    and udg.groupname = 'Schedule'
+                    and udf.fieldName = 'Teachers'
+                where udd.id = #id#
+            </cfquery>
+            <cfset courses_spec[#arrayRow#][8]=#getTeachers.data#> 
+            
+            <cfquery name="getExcludeBlocks" DataSource='#DSN#' dbtype='ODBC' debug='yes'> 
+                select udd.data
+                from uddata udd
+                inner join udfield udf
+                    on udd.fieldid = udf.fieldid
+                inner join udgroup udg
+                    on udg.groupid = udf.groupid
+                    and udg.grouptype = 'course'
+                    and udg.groupname = 'Schedule'
+                    and udf.fieldName = 'ExcludeBlocks'
+                where udd.id = #id#
+            </cfquery>
+
+	<!---Buscamos si hay asteriscos--->
+    
+	<cfset auxCourseExcludeBlocks=#getExcludeBlocks.data#>                        
+
+    <cfif Find('*', auxCourseExcludeBlocks) neq 0>
+	
+    
+	<cfset contador = 1>
+    <cfset excludedperiods = ''>
+    <cfset excludeddays = ''>
+    
+	<cfloop list="#auxCourseExcludeBlocks#" index="block" delimiters=";">
+    	<cfif (find('*', block) neq 0) and (find('*', block) eq 1)>
+        	
+        	
+    		<!--- <cfset ListAppend(excludedperiods, listGetAt(block, 2), ",")> --->
+            <cfset excludedperiods = ListAppend(excludedperiods, listGetAt(block, 2), ",")>
+			<cfset auxCourseExcludeBlocks = ListDeleteAt(auxCourseExcludeBlocks, ListFind(auxCourseExcludeBlocks, block, ";"), ";")>
+        
+         <cfelseif (find('*', block) neq 0) and (find('*', block) neq 1)>
+         	<cfset excludeddays = ListAppend(excludeddays, listGetAt(block, 1))>
+            <cfset auxCourseExcludeBlocks = ListDeleteAt(auxCourseExcludeBlocks, ListFind(auxCourseExcludeBlocks, block, ";"), ";")>
+         </cfif>   
+         <cfset contador++>
+	</cfloop> <!---Create the list of excluded periods and days--->
+    
+	<cfloop list="#excludedperiods#" index="period">
+   		<cfloop index="i" from="1" to="#maxDias#">
+    		<cfset auxCourseExcludeBlocks = ListAppend(auxCourseExcludeBlocks, i & ","& period, ";")>
+    	</cfloop>
+   </cfloop>
+	
+    <cfloop list="#excludeddays#" index="day">
+   		<cfloop index="i" from="1" to="#maxPeriodos#">
+    		<cfset auxCourseExcludeBlocks = ListAppend(auxCourseExcludeBlocks, day & ","& i, ";")>
+    	</cfloop>
+   </cfloop>
+
+
+</cfif> <!---We have found *--->   
+
+<cfset courses_spec[#arrayRow#][9] = auxCourseExcludeBlocks>
+
+
+            
+            <!---Recabamos si se reparten entre profesores o no--->
+            <cfquery name="getTeachersBalance" DataSource='#DSN#' dbtype='ODBC' debug='yes'> 
+                select udd.data
+                from uddata udd
+                inner join udfield udf
+                    on udd.fieldid = udf.fieldid
+                inner join udgroup udg
+                    on udg.groupid = udf.groupid
+                    and udg.grouptype = 'course'
+                    and udg.groupname = 'Schedule'
+                    and udf.fieldName = 'BalanceTeachers'
+                where udd.id = #id#
+            </cfquery>
+            <cfset courses_spec[#arrayRow#][10]=#getTeachersBalance.data#>
+            
+           <!---  <cfquery name="getCoursesData" DataSource='#DSN#' dbtype='ODBC' debug='yes'> 
+            select *
+            from courses
+            where courseid = #id#
+            </cfquery>
+            
+            <cfdump var="#getCoursesData#"> --->
+            
+            
+            <cfset arrayRow = arrayRow + 1>
+        </cfloop>
+    </cfoutput>
+    
+    <!--- Convertimos array en query para poder ordenarlo --->
+    <cfscript>
+		coursesQuery = QueryNew("ID, BlocksPerWeek, GR, MaxSections, MinGapBlock, MinGapDay, Rank, Teachers, ExcludeBlocks, BalanceTeachers");
+		for (i=1; i LTE ArrayLen(courses_spec); i=i+1) 
+		{
+			newRow = QueryAddRow(coursesQuery);
+			QuerySetCell(coursesQuery, "ID", #courses_spec[i][1]# );
+			QuerySetCell(coursesQuery, "BlocksPerWeek", #courses_spec[i][2]# );
+			QuerySetCell(coursesQuery, "GR", #courses_spec[i][3]# );
+			QuerySetCell(coursesQuery, "MaxSections", #courses_spec[i][4]# );
+			QuerySetCell(coursesQuery, "MinGapBlock", #courses_spec[i][5]# );
+			QuerySetCell(coursesQuery, "MinGapDay", #courses_spec[i][6]# );
+			QuerySetCell(coursesQuery, "Rank", #courses_spec[i][7]# );
+			QuerySetCell(coursesQuery, "Teachers", #courses_spec[i][8]# );
+			QuerySetCell(coursesQuery, "ExcludeBlocks", #courses_spec[i][9]# );
+			QuerySetCell(coursesQuery, "BalanceTeachers", #courses_spec[i][10]# );
+		}
+	</cfscript>

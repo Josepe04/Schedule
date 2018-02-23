@@ -14,11 +14,11 @@ import java.util.ArrayList;
 public class Restricciones {
 
 
-    public Restricciones(int idCourse,int tamx,int tamy) {
+    public Restricciones(int idCourse) {
         this.idCourse = idCourse;
         this.tamx=tamx;
         this.tamy=tamy;
-        huecos=new int[tamx][tamy];
+        huecos=new int[Algoritmo.TAMX][Algoritmo.TAMY];
         maxBlocksPerDay = 1;
     }
 

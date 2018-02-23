@@ -16,23 +16,22 @@ import java.util.logging.Logger;
  * @author Norhan
  */
 public class Consultas {
-    protected ArrayList<Restricciones> getRestricciones(){
+    String teachers;
+    TeacherRestrictions tdefault;
+    
+    public Consultas(){
+        teachers = "";
+        tdefault = teacherDefault();
+    }
+    
+    protected ArrayList<Restricciones> getRestricciones(int[] ids){
+        teachers = "";
         ArrayList<Restricciones> ret = new ArrayList<>();
         String consulta = "";
         try {
-            consulta="select top 10 udd.id\n" +
-                    "        from uddata udd\n" +
-                    "        inner join udfield udf\n" +
-                    "            on udd.fieldid = udf.fieldid\n" +
-                    "        inner join udgroup udg\n" +
-                    "            on udg.groupid = udf.groupid\n" +
-                    "            and udg.grouptype = 'course'\n" +
-                    "            and udg.groupname = 'Schedule'\n" +
-                    "            and udf.fieldName = 'Schedule'\n" +
-                    "            and udd.data = '1'";
-            ResultSet rs=DBConnect.st.executeQuery(consulta);
-            while(rs.next()){
-                Restricciones r=new Restricciones(rs.getInt(1),5,6);
+            ResultSet rs;
+            for(int i = 0; i < ids.length;i++){
+                Restricciones r=new Restricciones(ids[i]);
                 ret.add(r);
             }
             for(int i = 0; i < ret.size();i++){
@@ -154,6 +153,8 @@ public class Consultas {
                 ArrayList<String> ar = new ArrayList<>();
                 for(String s2:s){
                     ar.add(s2);
+                    if(!s2.equals("") && !teachers.contains(s2))
+                        teachers+=","+s2;
                 }
                 ret.get(i).setTrestricctions(ar);
                 
@@ -191,76 +192,145 @@ public class Consultas {
         return ret;
     } 
     
-    public TeacherRestrictions restriccionesTeacher(String id){
+    private TeacherRestrictions teacherDefault(){
         TeacherRestrictions ret = new TeacherRestrictions();
-        String consulta = "";
-
+        String consulta;
         ResultSet rs;
-        if(id!=null && id.length()>1)
         try {
             consulta="select udd.data\n" +
-"                from uddata udd\n" +
-"                inner join udfield udf\n" +
-"                    on udd.fieldid = udf.fieldid\n" +
-"                inner join udgroup udg\n" +
-"                    on udg.groupid = udf.groupid\n" +
-"                    and udg.grouptype = 'Staff'\n" +
-"                    and udg.groupname = 'Schedule'\n" +
-"                    and udf.fieldName = 'MaxSections'\n" +
-"                where udd.id ="+id;
+"        from uddata udd\n" +
+"        inner join udfield udf\n" +
+"            on udd.fieldid = udf.fieldid\n" +
+"        inner join udgroup udg\n" +
+"            on udg.groupid = udf.groupid\n" +
+"            and udg.grouptype = 'school'\n" +
+"            and udg.groupname = 'Schedule'\n" +
+"            and udf.fieldName = 'MaxSections'";
             rs = DBConnect.st.executeQuery(consulta);
             while(rs.next()){
                 ret.MaxSections=rs.getInt(1);
             }
             
             consulta="select udd.data\n" +
-"                from uddata udd\n" +
-"                inner join udfield udf\n" +
-"                    on udd.fieldid = udf.fieldid\n" +
-"                inner join udgroup udg\n" +
-"                    on udg.groupid = udf.groupid\n" +
-"                    and udg.grouptype = 'Staff'\n" +
-"                    and udg.groupname = 'Schedule'\n" +
-"                    and udf.fieldName = 'Preps'\n" +
-"                where udd.id ="+id;
+"        from uddata udd\n" +
+"        inner join udfield udf\n" +
+"            on udd.fieldid = udf.fieldid\n" +
+"        inner join udgroup udg\n" +
+"            on udg.groupid = udf.groupid\n" +
+"            and udg.grouptype = 'school'\n" +
+"            and udg.groupname = 'Schedule'\n" +
+"            and udf.fieldName = 'MaxPreps'";
             rs = DBConnect.st.executeQuery(consulta);
             while(rs.next()){
                 ret.Preps=rs.getInt(1);
             }
             
             consulta="select udd.data\n" +
-"                from uddata udd\n" +
-"                inner join udfield udf\n" +
-"                    on udd.fieldid = udf.fieldid\n" +
-"                inner join udgroup udg\n" +
-"                    on udg.groupid = udf.groupid\n" +
-"                    and udg.grouptype = 'Staff'\n" +
-"                    and udg.groupname = 'Schedule'\n" +
-"                    and udf.fieldName = 'MaxBxD'\n" +
-"                where udd.id ="+id;
+"        from uddata udd\n" +
+"        inner join udfield udf\n" +
+"            on udd.fieldid = udf.fieldid\n" +
+"        inner join udgroup udg\n" +
+"            on udg.groupid = udf.groupid\n" +
+"            and udg.grouptype = 'school'\n" +
+"            and udg.groupname = 'Schedule'\n" +
+"            and udf.fieldName = 'MaxBxD'\n";
             rs = DBConnect.st.executeQuery(consulta);
             while(rs.next()){
                 ret.MaxBxD=rs.getInt(1);
             }
-            
-            consulta="select udd.data\n" +
-"                from uddata udd\n" +
-"                inner join udfield udf\n" +
-"                    on udd.fieldid = udf.fieldid\n" +
-"                inner join udgroup udg\n" +
-"                    on udg.groupid = udf.groupid\n" +
-"                    and udg.grouptype = 'Staff'\n" +
-"                    and udg.groupname = 'Schedule'\n" +
-"                    and udf.fieldName = 'ExcludedBlocks'\n" +
-"                where udd.id="+id;
-            rs = DBConnect.st.executeQuery(consulta);
-            while(rs.next()){
-                ret.ExcludeBlocks=rs.getString(1);
-            }
-            
         } catch (Exception ex ) {
             Logger.getLogger(Consultas.class.getName()).log(Level.SEVERE, null, ex);
         }
+        return ret;
+    }
+    
+    public ArrayList<TeacherRestrictions> teachersList(){
+        ArrayList<TeacherRestrictions> ret = new ArrayList<>();
+        String [] tlist = teachers.split(",");
+        for(String s:tlist){
+            if(!s.equals(""))
+                ret.add(restriccionesTeacher(s));
+        }
+        return ret;
+    }
+    
+    public TeacherRestrictions restriccionesTeacher(String id){
+        TeacherRestrictions ret = new TeacherRestrictions();
+        String consulta = "";
+
+        ResultSet rs;
+        if(id!=null && id.length()>1)
+            try {
+                consulta="select udd.data\n" +
+    "                from uddata udd\n" +
+    "                inner join udfield udf\n" +
+    "                    on udd.fieldid = udf.fieldid\n" +
+    "                inner join udgroup udg\n" +
+    "                    on udg.groupid = udf.groupid\n" +
+    "                    and udg.grouptype = 'Staff'\n" +
+    "                    and udg.groupname = 'Schedule'\n" +
+    "                    and udf.fieldName = 'MaxSections'\n" +
+    "                where udd.id ="+id;
+                rs = DBConnect.st.executeQuery(consulta);
+                while(rs.next()){
+                    ret.MaxSections=rs.getInt(1);
+                }
+                if(ret.MaxSections==0)
+                    ret.MaxSections = tdefault.MaxSections;
+
+
+                consulta="select udd.data\n" +
+    "                from uddata udd\n" +
+    "                inner join udfield udf\n" +
+    "                    on udd.fieldid = udf.fieldid\n" +
+    "                inner join udgroup udg\n" +
+    "                    on udg.groupid = udf.groupid\n" +
+    "                    and udg.grouptype = 'Staff'\n" +
+    "                    and udg.groupname = 'Schedule'\n" +
+    "                    and udf.fieldName = 'Preps'\n" +
+    "                where udd.id ="+id;
+                rs = DBConnect.st.executeQuery(consulta);
+                while(rs.next()){
+                    ret.Preps=rs.getInt(1);
+                }
+                if(ret.Preps == 0)
+                    ret.Preps = tdefault.Preps;
+
+                consulta="select udd.data\n" +
+    "                from uddata udd\n" +
+    "                inner join udfield udf\n" +
+    "                    on udd.fieldid = udf.fieldid\n" +
+    "                inner join udgroup udg\n" +
+    "                    on udg.groupid = udf.groupid\n" +
+    "                    and udg.grouptype = 'Staff'\n" +
+    "                    and udg.groupname = 'Schedule'\n" +
+    "                    and udf.fieldName = 'MaxBxD'\n" +
+    "                where udd.id ="+id;
+                rs = DBConnect.st.executeQuery(consulta);
+                while(rs.next()){
+                    ret.MaxBxD=rs.getInt(1);
+                }
+                if(ret.MaxBxD == 0)
+                    ret.MaxBxD = tdefault.MaxBxD;
+
+                consulta="select udd.data\n" +
+    "                from uddata udd\n" +
+    "                inner join udfield udf\n" +
+    "                    on udd.fieldid = udf.fieldid\n" +
+    "                inner join udgroup udg\n" +
+    "                    on udg.groupid = udf.groupid\n" +
+    "                    and udg.grouptype = 'Staff'\n" +
+    "                    and udg.groupname = 'Schedule'\n" +
+    "                    and udf.fieldName = 'ExcludedBlocks'\n" +
+    "                where udd.id="+id;
+                rs = DBConnect.st.executeQuery(consulta);
+                while(rs.next()){
+                    ret.ExcludeBlocks=rs.getString(1);
+                }
+                ret.idTeacher = Integer.parseInt(id);
+            } catch (Exception ex ) {
+                Logger.getLogger(Consultas.class.getName()).log(Level.SEVERE, null, ex);
+            }
         return ret;
     }
 }

@@ -13,8 +13,8 @@ import java.util.List;
  * @author Norhan
  */
 public class Algoritmo {
-    public static int TAMX = 5;
-    public static int TAMY = 6;
+    public final static int TAMX = 5;
+    public final static int TAMY = 6;
     private List<Object> tabla;
     public Algoritmo(){
         tabla = new ArrayList<>();
@@ -28,23 +28,41 @@ public class Algoritmo {
         return true;
     }
     
-    public ArrayList<ArrayList<Tupla>> compatibles(ArrayList<ArrayList<Tupla>> l1, ArrayList<ArrayList<Tupla>> l2){
-        ArrayList<ArrayList<Tupla>> lista = new ArrayList<>();
-        for(ArrayList<Tupla> t:l1){
-            for(ArrayList<Tupla> t2:l2)
-                if(t.toString().equals(t2.toString()))
-                    lista.add(t);
+    
+    /**
+     * Dada una lista de patrones en los que se puede impartir la clase y 
+     * una cuadricula con el horario del profesor o del estudiante
+     * @param l1
+     * @param huecos
+     * @return 
+     */
+    public ArrayList<ArrayList<Tupla>> opcionesCompatibles(ArrayList<ArrayList<Tupla>> l1, int huecos[][]){
+        ArrayList<ArrayList<Tupla>> ret = new ArrayList<>();
+        for(ArrayList<Tupla> lista:l1){
+                boolean tvalida = true;
+                for(Tupla t:lista){
+                    if(huecos[(Integer)t.x][(Integer)t.y] != 0)
+                        tvalida = false;
+                }
+                if(tvalida)
+                    ret.add(lista);
         }
-        return lista;
+        return ret;
     }
     
     public void algo(){
         Consultas cs = new Consultas();
-        ArrayList<Restricciones> rst = cs.getRestricciones();
-        for(Restricciones r : rst){
-            ArrayList<ArrayList<Tupla>> w = r.opciones();
-            System.out.println(w.toString());
-        }
+        int[] idsprueba = {739,688,796,733,676,837,718,702,717};
+        ArrayList<Restricciones> rst = cs.getRestricciones(idsprueba);
+        ArrayList<TeacherRestrictions> trst = cs.teachersList();
+        System.out.println(trst.toString());
+        ArrayList<ArrayList<Tupla>> x = rst.get(0).opciones();
+        System.out.println(opcionesCompatibles(x,rst.get(1).getHuecos()));
+        //System.out.println(compatibles(x,x2).toString());
+//        for(Restricciones r : rst){
+//            ArrayList<ArrayList<Tupla>> w = r.opciones();
+//            System.out.println(w.toString());
+//        }
                 
     }
 }

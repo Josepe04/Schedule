@@ -13,8 +13,8 @@ import java.util.List;
  * @author Norhan
  */
 public class Algoritmo {
-    public final static int TAMX = 5;
-    public final static int TAMY = 6;
+    public final static int TAMX = 6;
+    public final static int TAMY = 5;
     private List<Object> tabla;
     public Algoritmo(){
         tabla = new ArrayList<>();
@@ -53,13 +53,35 @@ public class Algoritmo {
     public void algo(){
         Consultas cs = new Consultas();
         int[] idsprueba = {739,688,796,733,676,837,718,702,717};
-        ArrayList<Restricciones> rst = cs.getRestricciones(idsprueba);
+        ArrayList<CoursesRestrictions> rst = cs.getRestricciones(idsprueba);
         ArrayList<TeacherRestrictions> trst = cs.teachersList();
-        System.out.println(trst.toString());
-        ArrayList<ArrayList<Tupla>> x = rst.get(0).opciones();
-        System.out.println(opcionesCompatibles(x,rst.get(1).getHuecos()));
+        boolean[] asignados = new boolean[idsprueba.length];
+        int i = 0;
+        StudentRestrictions st = new StudentRestrictions();
+        for(CoursesRestrictions course: rst){
+            for(TeacherRestrictions teacher:trst){
+                int id = course.getIdCourse();
+                if(teacher.asignaturaCursable(id)){
+                    for(ArrayList<Tupla> ar: course.opciones()){
+                        if(teacher.patronCompatible(ar) && st.patronCompatible(ar)){
+                            teacher.ocuparHueco(ar, id);
+                            st.ocuparHueco(ar, id); 
+                            asignados[i] = true;
+                            break;
+                        }
+                    }
+                }
+                if(asignados[i])
+                    break;
+            }
+            i++;
+        }
+        for(TeacherRestrictions teacher:trst){
+            teacher.mostrarHuecos();
+            System.out.println("");
+        }
         //System.out.println(compatibles(x,x2).toString());
-//        for(Restricciones r : rst){
+//        for(CoursesRestrictions r : rst){
 //            ArrayList<ArrayList<Tupla>> w = r.opciones();
 //            System.out.println(w.toString());
 //        }

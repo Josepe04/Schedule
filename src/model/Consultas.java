@@ -24,14 +24,14 @@ public class Consultas {
         tdefault = teacherDefault();
     }
     
-    protected ArrayList<Restricciones> getRestricciones(int[] ids){
+    protected ArrayList<CoursesRestrictions> getRestricciones(int[] ids){
         teachers = "";
-        ArrayList<Restricciones> ret = new ArrayList<>();
+        ArrayList<CoursesRestrictions> ret = new ArrayList<>();
         String consulta = "";
         try {
             ResultSet rs;
             for(int i = 0; i < ids.length;i++){
-                Restricciones r=new Restricciones(ids[i]);
+                CoursesRestrictions r=new CoursesRestrictions(ids[i]);
                 ret.add(r);
             }
             for(int i = 0; i < ret.size();i++){
@@ -177,7 +177,7 @@ public class Consultas {
         } catch (SQLException ex) {
             Logger.getLogger(Consultas.class.getName()).log(Level.SEVERE, null, ex);
         }
-        ArrayList<Restricciones> borrar = new ArrayList<>();
+        ArrayList<CoursesRestrictions> borrar = new ArrayList<>();
         for(int i=0;i<ret.size();i++){
             if(i>=ret.size())
                 return ret;
@@ -187,7 +187,7 @@ public class Consultas {
                 }
             }
         }
-        for(Restricciones r:borrar)
+        for(CoursesRestrictions r:borrar)
             ret.remove(r);
         return ret;
     } 
@@ -325,7 +325,7 @@ public class Consultas {
     "                where udd.id="+id;
                 rs = DBConnect.st.executeQuery(consulta);
                 while(rs.next()){
-                    ret.ExcludeBlocks=rs.getString(1);
+                    ret.setExcludeBlocks(rs.getString(1));
                 }
                 ret.idTeacher = Integer.parseInt(id);
             } catch (Exception ex ) {

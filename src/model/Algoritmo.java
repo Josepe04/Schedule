@@ -7,6 +7,7 @@ package model;
 
 import java.util.ArrayList;
 import java.util.List;
+import xml.XMLWriterDOM;
 
 /**
  *
@@ -52,18 +53,26 @@ public class Algoritmo {
     
     public void algo(){
         Consultas cs = new Consultas();
-        int[] idsprueba = {739,688,796,733,676,837,718,702,717};
+        int[] idsprueba = {739,688,796,733,676,837,718,702,717,846,690,
+                            721,735,722,680,706,755,746,872,873,935,650};
         ArrayList<CoursesRestrictions> rst = cs.getRestricciones(idsprueba);
-        ArrayList<TeacherRestrictions> trst = cs.teachersList();
+        ArrayList<ArrayList<Student>> students = new ArrayList<>();
+        ArrayList<Teacher> trst = cs.teachersList();
+        int [] numst = new int[1];
+        for(CoursesRestrictions c : rst){
+            students.add(cs.restriccionesStudent(c.getIdCourse(), numst));
+            c.setSections(numst[0]);
+        }
         boolean[] asignados = new boolean[idsprueba.length];
         int i = 0;
-        StudentRestrictions st = new StudentRestrictions();
+        Student st = new Student(2);
         for(CoursesRestrictions course: rst){
-            for(TeacherRestrictions teacher:trst){
+            for(Teacher teacher:trst){
                 int id = course.getIdCourse();
                 if(teacher.asignaturaCursable(id)){
                     for(ArrayList<Tupla> ar: course.opciones()){
-                        if(teacher.patronCompatible(ar) && st.patronCompatible(ar)){
+                        if(course.getTrestricctions().contains(teacher.idTeacher) 
+                                && teacher.patronCompatible(ar) && st.patronCompatible(ar)){
                             teacher.ocuparHueco(ar, id);
                             st.ocuparHueco(ar, id); 
                             asignados[i] = true;
@@ -76,10 +85,15 @@ public class Algoritmo {
             }
             i++;
         }
-        for(TeacherRestrictions teacher:trst){
+        
+        XMLWriterDOM.xmlCreate(trst, null);
+        
+        for(Teacher teacher:trst){
             teacher.mostrarHuecos();
             System.out.println("");
         }
+        System.out.println("estudiante: ");
+        st.mostrarHuecos();
         //System.out.println(compatibles(x,x2).toString());
 //        for(CoursesRestrictions r : rst){
 //            ArrayList<ArrayList<Tupla>> w = r.opciones();

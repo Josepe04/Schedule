@@ -11,11 +11,25 @@ import java.util.ArrayList;
  *
  * @author Norhan
  */
-public class StudentRestrictions {
+public class Student {
     private int huecos[][];
-    public StudentRestrictions(){
+    private int id;
+    private String genero;
+
+    public String getGenero() {
+        return genero;
+    }
+
+    public void setGenero(String genero) {
+        this.genero = genero;
+    }
+
+    public int getId() {
+        return id;
+    }
+    
+    public Student(int id){
         huecos = new int[Algoritmo.TAMX][Algoritmo.TAMY];
-        
     }
     
     public void ocuparHueco(ArrayList<Tupla> ar , int id){
@@ -28,5 +42,14 @@ public class StudentRestrictions {
             if(huecos[(Integer)t.x][(Integer)t.y]!=0)
                 return false;
         return true;
+    }
+    
+    public void mostrarHuecos(){
+        for(int i = 0; i < Algoritmo.TAMY;i++){
+            for(int j = 0; j < Algoritmo.TAMX;j++){
+                System.out.print(" "+huecos[j][i]+" ");
+            }
+            System.out.println("");
+        }
     }
 }

@@ -16,16 +16,16 @@ import java.util.logging.Logger;
  * @author Norhan
  */
 public class Consultas {
-    String teachers;
-    TeacherRestrictions tdefault;
+    ArrayList<Integer> teachers;
+    Teacher tdefault;
     
     public Consultas(){
-        teachers = "";
+        teachers = new ArrayList<>();
         tdefault = teacherDefault();
     }
     
     protected ArrayList<CoursesRestrictions> getRestricciones(int[] ids){
-        teachers = "";
+        teachers = new ArrayList<>();
         ArrayList<CoursesRestrictions> ret = new ArrayList<>();
         String consulta = "";
         try {
@@ -150,11 +150,13 @@ public class Consultas {
                 while(rs.next()){
                     s=rs.getString(1).split(",");
                 }
-                ArrayList<String> ar = new ArrayList<>();
+                ArrayList<Integer> ar = new ArrayList<>();
                 for(String s2:s){
-                    ar.add(s2);
-                    if(!s2.equals("") && !teachers.contains(s2))
-                        teachers+=","+s2;
+                    if(!s2.equals("")){
+                        ar.add(Integer.parseInt(s2));
+                        if(!teachers.contains(Integer.parseInt(s2)))
+                            teachers.add(Integer.parseInt(s2));
+                    }
                 }
                 ret.get(i).setTrestricctions(ar);
                 
@@ -177,23 +179,11 @@ public class Consultas {
         } catch (SQLException ex) {
             Logger.getLogger(Consultas.class.getName()).log(Level.SEVERE, null, ex);
         }
-        ArrayList<CoursesRestrictions> borrar = new ArrayList<>();
-        for(int i=0;i<ret.size();i++){
-            if(i>=ret.size())
-                return ret;
-            else{
-                if(ret.get(i).getTrestricctions().get(0).equals("")){
-                    borrar.add(ret.get(i));
-                }
-            }
-        }
-        for(CoursesRestrictions r:borrar)
-            ret.remove(r);
         return ret;
     } 
     
-    private TeacherRestrictions teacherDefault(){
-        TeacherRestrictions ret = new TeacherRestrictions();
+    private Teacher teacherDefault(){
+        Teacher ret = new Teacher();
         String consulta;
         ResultSet rs;
         try {
@@ -244,22 +234,21 @@ public class Consultas {
         return ret;
     }
     
-    public ArrayList<TeacherRestrictions> teachersList(){
-        ArrayList<TeacherRestrictions> ret = new ArrayList<>();
-        String [] tlist = teachers.split(",");
-        for(String s:tlist){
+    public ArrayList<Teacher> teachersList(){
+        ArrayList<Teacher> ret = new ArrayList<>();
+        for(Integer s:teachers){
             if(!s.equals(""))
                 ret.add(restriccionesTeacher(s));
         }
         return ret;
     }
     
-    public TeacherRestrictions restriccionesTeacher(String id){
-        TeacherRestrictions ret = new TeacherRestrictions();
+    public Teacher restriccionesTeacher(int id){
+        Teacher ret = new Teacher();
         String consulta = "";
 
         ResultSet rs;
-        if(id!=null && id.length()>1)
+        if(id!=0)
             try {
                 consulta="select udd.data\n" +
     "                from uddata udd\n" +
@@ -327,10 +316,48 @@ public class Consultas {
                 while(rs.next()){
                     ret.setExcludeBlocks(rs.getString(1));
                 }
-                ret.idTeacher = Integer.parseInt(id);
+                ret.idTeacher = id;
             } catch (Exception ex ) {
                 Logger.getLogger(Consultas.class.getName()).log(Level.SEVERE, null, ex);
             }
         return ret;
     }
+    
+    public ArrayList<Student> restriccionesStudent(int id,int numStudents[]){
+        ArrayList<Student> ret= new ArrayList<>();
+        String consulta = "    select sr.studentid, p.gender\n" +
+            "    from studentrequests sr, person p, person_student ps \n" +
+            "     where sr.studentid = p.personid\n" +
+            "    and ps.studentid = p.personid\n" +
+            "    and sr.yearid = " +264+
+            "    and sr.courseid = " +id+
+            "    and ps.status = 'enrolled'\n" +
+            "    and ps.nextstatus = 'enrolled'\n" +
+            "    order by gender";
+        ResultSet rs;
+        try {
+            rs = DBConnect.st.executeQuery(consulta);
+            while(rs.next()){
+                numStudents[0] = rs.getInt("cuenta");
+                Student st = new Student(rs.getInt("studentid"));
+                st.setGenero(rs.getString("gender"));
+                ret.add(st);
+            }
+            consulta = "select count(*) as cuenta\n" +
+"    from studentrequests sr, person p, person_student ps \n" +
+"     where sr.studentid = p.personid\n" +
+"    and ps.studentid = p.personid\n" +
+"    and sr.yearid = 264    and sr.courseid = 650    and ps.status = 'enrolled'\n" +
+"    and ps.nextstatus = 'enrolled'";
+            rs = DBConnect.st.executeQuery(consulta);
+            while(rs.next()){
+                numStudents[0] = rs.getInt("cuenta");
+            }
+           
+        } catch (SQLException ex) {
+            Logger.getLogger(Consultas.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return ret;
+    }
+    
 }

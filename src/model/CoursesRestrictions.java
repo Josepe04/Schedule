@@ -12,6 +12,28 @@ import java.util.ArrayList;
  * @author Norhan
  */
 public class CoursesRestrictions {
+    
+        //cuadricula
+    private int[][] huecos;
+    private int idCourse; // id del curso
+    private int blocksWeek; //bloques por semana
+    private String maxSections; //maximo numero de grupos
+    private String minGapBlocks; // espacio minimo entre bloques
+    private int minGapDays; //cada cuantos dias entre bloques
+    private int rank; // prioridad
+    private boolean GR; //
+    private String excludeBlocks; // bloques que no se puede
+    private int maxBlocksPerDay;
+    private ArrayList<Integer> trestricctions;
+    private int sections; //numero de secciones
+
+    public int getSections() {
+        return sections;
+    }
+
+    public void setSections(int sections) {
+        this.sections = sections;
+    }
 
 
     public CoursesRestrictions(int idCourse) {
@@ -92,11 +114,11 @@ public class CoursesRestrictions {
         this.excludeBlocks = excludeBlocks;
     }
     
-        public ArrayList<String> getTrestricctions() {
+        public ArrayList<Integer> getTrestricctions() {
         return trestricctions;
     }
 
-    public void setTrestricctions(ArrayList<String> trestricctions) {
+    public void setTrestricctions(ArrayList<Integer> trestricctions) {
         this.trestricctions = trestricctions;
     }
     
@@ -138,18 +160,4 @@ public class CoursesRestrictions {
         }
         return ret;
     }
-    
-    //cuadricula
-    private int[][] huecos;
-    private int idCourse; // id del curso
-    private int blocksWeek; //bloques por semana
-    private String maxSections; //maximo numero de grupos
-    private String minGapBlocks; // espacio minimo entre bloques
-    private int minGapDays; //cada cuantos dias entre bloques
-    private int rank; // prioridad
-    private boolean GR; //
-    private String excludeBlocks; // bloques que no se puede
-    private int maxBlocksPerDay;
-    private ArrayList<String> trestricctions;
-
 }

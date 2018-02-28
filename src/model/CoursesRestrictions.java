@@ -24,24 +24,35 @@ public class CoursesRestrictions {
     private boolean GR; //
     private String excludeBlocks; // bloques que no se puede
     private int maxBlocksPerDay;
-    private ArrayList<Integer> trestricctions;
-    private int sections; //numero de secciones
-
-    public int getSections() {
-        return sections;
-    }
+    private int sections;
 
     public void setSections(int sections) {
         this.sections = sections;
     }
+    private ArrayList<Integer> trestricctions;
 
-
+    public int getSections() {
+        return sections;
+    }
+    
     public CoursesRestrictions(int idCourse) {
         this.idCourse = idCourse;
         huecos=new int[Algoritmo.TAMX][Algoritmo.TAMY];
         maxBlocksPerDay = 1;
+        sections = 0;
     }
 
+    public boolean addSection(){
+        try{
+            if(sections+1 < Integer.parseInt(maxSections))
+                sections++;
+            return true;
+        }catch(Exception e){
+            sections++;
+            return true;
+        }
+    }
+    
     public int getIdCourse() {
         return idCourse;
     }

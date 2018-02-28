@@ -6,7 +6,9 @@
 package model;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import xml.XMLWriterDOM;
 
 /**
@@ -16,6 +18,7 @@ import xml.XMLWriterDOM;
 public class Algoritmo {
     public final static int TAMX = 6;
     public final static int TAMY = 5;
+    public final static int CHILDSPERSECTION = 20;
     private List<Object> tabla;
     public Algoritmo(){
         tabla = new ArrayList<>();
@@ -56,32 +59,52 @@ public class Algoritmo {
         int[] idsprueba = {739,688,796,733,676,837,718,702,717,846,690,
                             721,735,722,680,706,755,746,872,873,935,650};
         ArrayList<CoursesRestrictions> rst = cs.getRestricciones(idsprueba);
-        ArrayList<ArrayList<Student>> students = new ArrayList<>();
         ArrayList<Teacher> trst = cs.teachersList();
-        int [] numst = new int[1];
+        HashMap<String,ArrayList<Tupla>> seccionesExistentes = new HashMap<>();
+        HashMap<Integer,ArrayList<Student>> studentsCourse = new HashMap<>();
+        HashMap<Integer,Student> students = new HashMap<>();
+        
+        int [] numst = new int[2];
         for(CoursesRestrictions c : rst){
-            students.add(cs.restriccionesStudent(c.getIdCourse(), numst));
-            c.setSections(numst[0]);
+            ArrayList<Student> st = cs.restriccionesStudent(c.getIdCourse(), numst);
+            studentsCourse.put(c.getIdCourse(), st);
+            for(Student s:st)
+                students.put(s.getId(), s);
         }
         boolean[] asignados = new boolean[idsprueba.length];
         int i = 0;
         Student st = new Student(2);
         for(CoursesRestrictions course: rst){
-            for(Teacher teacher:trst){
-                int id = course.getIdCourse();
-                if(teacher.asignaturaCursable(id)){
-                    for(ArrayList<Tupla> ar: course.opciones()){
-                        if(course.getTrestricctions().contains(teacher.idTeacher) 
-                                && teacher.patronCompatible(ar) && st.patronCompatible(ar)){
-                            teacher.ocuparHueco(ar, id);
-                            st.ocuparHueco(ar, id); 
-                            asignados[i] = true;
-                            break;
+            int minsections = 1 + studentsCourse.get(course.getIdCourse()).size()/CHILDSPERSECTION;
+            course.setSections(minsections);
+            for(int j = 0;j<minsections;j++){
+                for(Teacher teacher:trst){
+                    int id = course.getIdCourse();
+                    if(teacher.asignaturaCursable(id)){
+                        for(ArrayList<Tupla> ar: course.opciones()){
+                            int numberStudents = 0;
+                            ArrayList<Integer> stAux = new ArrayList<>(); 
+                            for(Student st2 :studentsCourse.get(course.getIdCourse()))
+                                if(course.getTrestricctions().contains(teacher.idTeacher) 
+                                        && teacher.patronCompatible(ar) && st2.patronCompatible(ar)){
+                                        stAux.add(st2.getId());
+                                        numberStudents++;
+                                }
+                            int size = studentsCourse.get(course.getIdCourse()).size();
+                            if(numberStudents > size/minsections -1){
+                                teacher.ocuparHueco(ar, id*100+j);1
+                                for(Integer k:stAux)
+                                    students.get(k).ocuparHueco(ar, id*100+j);
+                                seccionesExistentes.put(""+course.getIdCourse()+course.getSections(),ar);
+                                asignados[i] = true;
+                                break;
+                            }
                         }
                     }
+                    if(asignados[i])
+                        break;
                 }
-                if(asignados[i])
-                    break;
+                asignados[i] = false;
             }
             i++;
         }
@@ -92,13 +115,12 @@ public class Algoritmo {
             teacher.mostrarHuecos();
             System.out.println("");
         }
+        for(Map.Entry<Integer, Student> entry : students.entrySet()) {
+            entry.getValue().mostrarHuecos();
+            System.out.println("");
+        }
         System.out.println("estudiante: ");
         st.mostrarHuecos();
-        //System.out.println(compatibles(x,x2).toString());
-//        for(CoursesRestrictions r : rst){
-//            ArrayList<ArrayList<Tupla>> w = r.opciones();
-//            System.out.println(w.toString());
-//        }
                 
     }
 }

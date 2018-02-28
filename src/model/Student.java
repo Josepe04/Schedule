@@ -29,6 +29,7 @@ public class Student {
     }
     
     public Student(int id){
+        this.id = id;
         huecos = new int[Algoritmo.TAMX][Algoritmo.TAMY];
     }
     
@@ -51,5 +52,9 @@ public class Student {
             }
             System.out.println("");
         }
+    }
+    
+    public boolean equals(Student st){
+        return st.id == this.id;
     }
 }

@@ -8,6 +8,7 @@ package model;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -297,7 +298,12 @@ public class Consultas {
     "                where udd.id ="+id;
                 rs = DBConnect.st.executeQuery(consulta);
                 while(rs.next()){
-                    ret.MaxBxD=rs.getInt(1);
+                    String s = rs.getString(1);
+                    try{
+                        ret.MaxBxD = Integer.parseInt(s);
+                    }catch(Exception e){
+                        ret.MaxBxD = 1;
+                    }
                 }
                 if(ret.MaxBxD == 0)
                     ret.MaxBxD = tdefault.MaxBxD;
@@ -338,7 +344,7 @@ public class Consultas {
         try {
             rs = DBConnect.st.executeQuery(consulta);
             while(rs.next()){
-                numStudents[0] = rs.getInt("cuenta");
+                numStudents[1] = rs.getInt("studentid");
                 Student st = new Student(rs.getInt("studentid"));
                 st.setGenero(rs.getString("gender"));
                 ret.add(st);
@@ -347,15 +353,25 @@ public class Consultas {
 "    from studentrequests sr, person p, person_student ps \n" +
 "     where sr.studentid = p.personid\n" +
 "    and ps.studentid = p.personid\n" +
-"    and sr.yearid = 264    and sr.courseid = 650    and ps.status = 'enrolled'\n" +
+"    and sr.yearid = 264    and sr.courseid="+id+" and ps.status = 'enrolled'\n" +
 "    and ps.nextstatus = 'enrolled'";
             rs = DBConnect.st.executeQuery(consulta);
             while(rs.next()){
                 numStudents[0] = rs.getInt("cuenta");
             }
-           
+            
         } catch (SQLException ex) {
             Logger.getLogger(Consultas.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        if(ret.isEmpty()){
+            numStudents[0] = 1;
+            Random r = new Random();
+            Student st = new Student(r.nextInt());
+            if(r.nextBoolean())
+                st.setGenero("Male");
+            else
+                st.setGenero("Female");
+            ret.add(st);
         }
         return ret;
     }

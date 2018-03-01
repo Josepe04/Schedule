@@ -25,14 +25,14 @@ public class Consultas {
         tdefault = teacherDefault();
     }
     
-    protected ArrayList<CoursesRestrictions> getRestricciones(int[] ids){
+    protected ArrayList<Course> getRestricciones(int[] ids){
         teachers = new ArrayList<>();
-        ArrayList<CoursesRestrictions> ret = new ArrayList<>();
+        ArrayList<Course> ret = new ArrayList<>();
         String consulta = "";
         try {
             ResultSet rs;
             for(int i = 0; i < ids.length;i++){
-                CoursesRestrictions r=new CoursesRestrictions(ids[i]);
+                Course r=new Course(ids[i]);
                 ret.add(r);
             }
             for(int i = 0; i < ret.size();i++){

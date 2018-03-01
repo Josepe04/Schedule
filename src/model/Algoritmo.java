@@ -6,7 +6,9 @@
 package model;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import xml.XMLWriterDOM;
@@ -58,23 +60,26 @@ public class Algoritmo {
         Consultas cs = new Consultas();
         int[] idsprueba = {739,688,796,733,676,837,718,702,717,846,690,
                             721,735,722,680,706,755,746,872,873,935,650};
-        ArrayList<CoursesRestrictions> rst = cs.getRestricciones(idsprueba);
+        ArrayList<Course> rst = cs.getRestricciones(idsprueba);
         ArrayList<Teacher> trst = cs.teachersList();
         HashMap<String,ArrayList<Tupla>> seccionesExistentes = new HashMap<>();
-        HashMap<Integer,ArrayList<Student>> studentsCourse = new HashMap<>();
+        HashMap<Integer,ArrayList<Integer>> studentsCourse = new HashMap<>();
         HashMap<Integer,Student> students = new HashMap<>();
         
         int [] numst = new int[2];
-        for(CoursesRestrictions c : rst){
+        for(Course c : rst){
             ArrayList<Student> st = cs.restriccionesStudent(c.getIdCourse(), numst);
-            studentsCourse.put(c.getIdCourse(), st);
-            for(Student s:st)
+            ArrayList<Integer> stids= new ArrayList<>();
+            for(Student s:st){
                 students.put(s.getId(), s);
+                stids.add(s.getId());
+            }
+            studentsCourse.put(c.getIdCourse(),stids);
         }
+        
         boolean[] asignados = new boolean[idsprueba.length];
         int i = 0;
-        Student st = new Student(2);
-        for(CoursesRestrictions course: rst){
+        for(Course course: rst){
             int minsections = 1 + studentsCourse.get(course.getIdCourse()).size()/CHILDSPERSECTION;
             course.setSections(minsections);
             for(int j = 0;j<minsections;j++){
@@ -83,19 +88,15 @@ public class Algoritmo {
                     if(teacher.asignaturaCursable(id)){
                         for(ArrayList<Tupla> ar: course.opciones()){
                             int numberStudents = 0;
-                            ArrayList<Integer> stAux = new ArrayList<>(); 
-                            for(Student st2 :studentsCourse.get(course.getIdCourse()))
+                            for(Integer st2 :studentsCourse.get(course.getIdCourse()))
                                 if(course.getTrestricctions().contains(teacher.idTeacher) 
-                                        && teacher.patronCompatible(ar) && st2.patronCompatible(ar)){
-                                        stAux.add(st2.getId());
+                                        && teacher.patronCompatible(ar) && students.get(st2).patronCompatible(ar)){
                                         numberStudents++;
                                 }
                             int size = studentsCourse.get(course.getIdCourse()).size();
                             if(numberStudents > size/minsections -1){
-                                teacher.ocuparHueco(ar, id*100+j);1
-                                for(Integer k:stAux)
-                                    students.get(k).ocuparHueco(ar, id*100+j);
-                                seccionesExistentes.put(""+course.getIdCourse()+course.getSections(),ar);
+                                teacher.ocuparHueco(ar, id*100+j);
+                                seccionesExistentes.put(""+course.getIdCourse()+j,ar);
                                 asignados[i] = true;
                                 break;
                             }
@@ -106,6 +107,8 @@ public class Algoritmo {
                 }
                 asignados[i] = false;
             }
+            studentGroups(course,minsections,seccionesExistentes,studentsCourse.get(course.getIdCourse()),students);
+            
             i++;
         }
         
@@ -119,8 +122,54 @@ public class Algoritmo {
             entry.getValue().mostrarHuecos();
             System.out.println("");
         }
-        System.out.println("estudiante: ");
-        st.mostrarHuecos();
                 
+    }
+    
+    private class Comp implements Comparator<ArrayList<Integer>>{
+        @Override
+        public int compare(ArrayList<Integer> e1, ArrayList<Integer> e2) {
+            if(e1.size() < e2.size()){
+                return 1;
+            } else {
+                return -1;
+            }
+        }
+    }
+    
+    private void studentGroups(Course c,int minsections,HashMap<String, ArrayList<Tupla>> sec,
+            ArrayList<Integer> studentsCourse,HashMap<Integer,Student> students){
+        ArrayList<ArrayList<Integer>> stids = new ArrayList<>();
+        for(int i = 0; i < minsections;i++){
+            stids.add(new ArrayList<>());
+            for(Integer j:studentsCourse){
+                if(students.get(j).patronCompatible(sec.get(""+c.getIdCourse()+i))){
+                    stids.get(i).add(j);
+                }
+            }
+        }
+        stids.sort(new Comp());
+        if((stids.get(0).size()==studentsCourse.size() && stids.size()==1)
+                ||(stids.get(0).size()==studentsCourse.size() && stids.get(1).size() == studentsCourse.size())){
+            int i=0;
+            for(Integer j:studentsCourse){
+                if(stids.size()==1 || i< studentsCourse.size()/2)
+                    students.get(j).ocuparHueco(sec.get(""+c.getIdCourse()+0), c.getIdCourse()*100);
+                else
+                    students.get(j).ocuparHueco(sec.get(""+c.getIdCourse()+1), c.getIdCourse()*100+1);
+                i++;
+            }
+        }else{
+            ArrayList<Integer> diferencia = stids.get(stids.size()-1);
+            for(int j = stids.size()-1; j >= 0;j--){
+                diferencia = Conjuntos.diferencia(diferencia, stids.get(j));
+                int i=0;
+                for(Integer k:diferencia){
+                    if(i<(studentsCourse.size()/2+3))
+                        students.get(k).ocuparHueco(sec.get(""+c.getIdCourse()+0), c.getIdCourse()*100);
+                    i++;
+                }
+            }
+        }
+          
     }
 }
